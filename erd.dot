@@ -1,0 +1,244 @@
+/*
+ * Silver-layer entity-relationship diagram for the MTSS sample data model.
+ *
+ * Render:  dot -Tsvg erd.dot -o erd.svg
+ *
+ * Reading the diagram: silver.students is the current-year roster and the hub
+ * every fact attaches to; silver.enrollment_yearly is the multi-year spine
+ * that supplies the denominator for any rate. Two relationships are drawn as
+ * dashed edges because they are attribution rather than ownership. An
+ * attendance mark takes its school and grade from the enrollment spine rather
+ * than from its own payload, which is noted inside the attendance_daily node.
+ */
+digraph mtss_silver_erd {
+  graph [
+    rankdir = LR,
+    splines = spline,
+    overlap = false,
+    nodesep = 0.30,
+    ranksep = 1.6,
+    fontname = "Helvetica",
+    fontsize = 11,
+    bgcolor = "white",
+    label = "MTSS sample data model, silver layer entity relationships",
+    labelloc = t,
+    fontcolor = "#1f2933"
+  ];
+  node [
+    shape = plaintext,
+    fontname = "Helvetica",
+    fontsize = 10
+  ];
+  edge [
+    fontname = "Helvetica",
+    fontsize = 9,
+    color = "#5a6b7b",
+    fontcolor = "#5a6b7b",
+    arrowsize = 0.7
+  ];
+
+  /* ---------------- roster spine ---------------- */
+
+  students [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#1f3a5f" ALIGN="LEFT"><FONT COLOR="white"><B>silver.students</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#f4f7fa" ALIGN="LEFT">student_id&nbsp;&nbsp;<I>PK</I></TD></TR>
+      <TR><TD ALIGN="LEFT">school_id, grade</TD></TR>
+      <TR><TD ALIGN="LEFT">gender, race_ethnicity</TD></TR>
+      <TR><TD ALIGN="LEFT">ell, iep, frpl</TD></TR>
+      <TR><TD ALIGN="LEFT">mtss_tier, key_indicator</TD></TR>
+    </TABLE>>];
+
+  enrollment_yearly [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#1f3a5f" ALIGN="LEFT"><FONT COLOR="white"><B>silver.enrollment_yearly</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#f4f7fa" ALIGN="LEFT">student_id, school_year&nbsp;&nbsp;<I>PK</I></TD></TR>
+      <TR><TD ALIGN="LEFT">school_id, grade</TD></TR>
+      <TR><TD ALIGN="LEFT">gender, race_ethnicity</TD></TR>
+      <TR><TD ALIGN="LEFT">ell, iep, frpl</TD></TR>
+    </TABLE>>];
+
+  /* ---------------- facts attached to the roster ---------------- */
+
+  attendance_daily [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#2c6e8f" ALIGN="LEFT"><FONT COLOR="white"><B>silver.attendance_daily</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#f4f7fa" ALIGN="LEFT">student_id, attendance_date&nbsp;&nbsp;<I>PK</I></TD></TR>
+      <TR><TD ALIGN="LEFT"><FONT COLOR="#a05a2c">school_id, grade&nbsp;&nbsp;(from the enrollment spine)</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT">status</TD></TR>
+    </TABLE>>];
+
+  attendance_monthly [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#2c6e8f" ALIGN="LEFT"><FONT COLOR="white"><B>silver.attendance_monthly</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#f4f7fa" ALIGN="LEFT">student_id, school_year, month_number&nbsp;&nbsp;<I>PK</I></TD></TR>
+      <TR><TD ALIGN="LEFT">days_enrolled, days_present</TD></TR>
+    </TABLE>>];
+
+  incidents [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#2c6e8f" ALIGN="LEFT"><FONT COLOR="white"><B>silver.incidents</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#f4f7fa" ALIGN="LEFT">incident_id&nbsp;&nbsp;<I>PK</I></TD></TR>
+      <TR><TD ALIGN="LEFT">student_id, school_id, grade</TD></TR>
+      <TR><TD ALIGN="LEFT">incident_date, incident_type</TD></TR>
+      <TR><TD ALIGN="LEFT">location, disposition</TD></TR>
+    </TABLE>>];
+
+  benchmarks [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#2c6e8f" ALIGN="LEFT"><FONT COLOR="white"><B>silver.benchmarks</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#f4f7fa" ALIGN="LEFT">student_id, platform, subject_area, testing_window&nbsp;&nbsp;<I>PK</I></TD></TR>
+      <TR><TD ALIGN="LEFT">school_id, grade, school_year</TD></TR>
+      <TR><TD ALIGN="LEFT">percentile, scale_score, benchmark_tier</TD></TR>
+    </TABLE>>];
+
+  state_assessments [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#2c6e8f" ALIGN="LEFT"><FONT COLOR="white"><B>silver.state_assessments</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#f4f7fa" ALIGN="LEFT">student_id, assessment, school_year&nbsp;&nbsp;<I>PK</I></TD></TR>
+      <TR><TD ALIGN="LEFT">school_id, grade, family, subject_area</TD></TR>
+      <TR><TD ALIGN="LEFT">level, proficient</TD></TR>
+    </TABLE>>];
+
+  assessments [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#2c6e8f" ALIGN="LEFT"><FONT COLOR="white"><B>silver.assessments</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#f4f7fa" ALIGN="LEFT">student_id, school_year, subject, testing_window&nbsp;&nbsp;<I>PK</I></TD></TR>
+      <TR><TD ALIGN="LEFT">scale_score, proficient</TD></TR>
+    </TABLE>>];
+
+  sel_responses [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#2c6e8f" ALIGN="LEFT"><FONT COLOR="white"><B>silver.sel_responses</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#f4f7fa" ALIGN="LEFT">student_id, survey_window, respondent&nbsp;&nbsp;<I>PK</I></TD></TR>
+      <TR><TD ALIGN="LEFT">school_id, grade, school_year</TD></TR>
+      <TR><TD ALIGN="LEFT">window_label, recorded_at</TD></TR>
+      <TR><TD ALIGN="LEFT">five SEL competency scores</TD></TR>
+    </TABLE>>];
+
+  interventions [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#8a5a1f" ALIGN="LEFT"><FONT COLOR="white"><B>silver.interventions</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#f4f7fa" ALIGN="LEFT">intervention_id&nbsp;&nbsp;<I>PK</I></TD></TR>
+      <TR><TD ALIGN="LEFT">student_id, school_id, grade</TD></TR>
+      <TR><TD ALIGN="LEFT">mtss_tier, domain, strategy</TD></TR>
+      <TR><TD ALIGN="LEFT">aim_start, aim_goal, aim_target_date</TD></TR>
+      <TR><TD ALIGN="LEFT">linked_incident_id, auto_flagged</TD></TR>
+      <TR><TD ALIGN="LEFT">status, met_goal, start_date, end_date</TD></TR>
+    </TABLE>>];
+
+  referrals [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#4a7c2f" ALIGN="LEFT"><FONT COLOR="white"><B>silver.referrals</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#f4f7fa" ALIGN="LEFT">referral_id&nbsp;&nbsp;<I>PK</I></TD></TR>
+      <TR><TD ALIGN="LEFT">student_id, school_id, grade</TD></TR>
+      <TR><TD ALIGN="LEFT">partner_id, partner_name, service_category</TD></TR>
+      <TR><TD ALIGN="LEFT">opened_date, current_status</TD></TR>
+      <TR><TD ALIGN="LEFT">closed_loop, last_status_date</TD></TR>
+    </TABLE>>];
+
+  grad_outcomes [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#5b3a8f" ALIGN="LEFT"><FONT COLOR="white"><B>silver.grad_outcomes</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#f4f7fa" ALIGN="LEFT">student_id&nbsp;&nbsp;<I>PK</I></TD></TR>
+      <TR><TD ALIGN="LEFT">cohort_year, school_id, outcome</TD></TR>
+      <TR><TD ALIGN="LEFT">race_ethnicity, ell, iep, frpl</TD></TR>
+    </TABLE>>];
+
+  grad_tracker [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#5b3a8f" ALIGN="LEFT"><FONT COLOR="white"><B>silver.grad_tracker</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#f4f7fa" ALIGN="LEFT">student_id&nbsp;&nbsp;<I>PK</I></TD></TR>
+      <TR><TD ALIGN="LEFT">school_id, grade, cohort_year</TD></TR>
+      <TR><TD ALIGN="LEFT">credits_earned, credits_required</TD></TR>
+      <TR><TD ALIGN="LEFT">state_exams_passed, state_exams_required</TD></TR>
+      <TR><TD ALIGN="LEFT">on_track</TD></TR>
+    </TABLE>>];
+
+  ccr [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#5b3a8f" ALIGN="LEFT"><FONT COLOR="white"><B>silver.ccr</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#f4f7fa" ALIGN="LEFT">student_id&nbsp;&nbsp;<I>PK</I></TD></TR>
+      <TR><TD ALIGN="LEFT">school_id, grade</TD></TR>
+      <TR><TD ALIGN="LEFT">ap_ib, dual_enrollment, tech_certification</TD></TR>
+    </TABLE>>];
+
+  program_participation [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#2c6e8f" ALIGN="LEFT"><FONT COLOR="white"><B>silver.program_participation</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#f4f7fa" ALIGN="LEFT">student_id, program_id, school_year&nbsp;&nbsp;<I>PK</I></TD></TR>
+      <TR><TD ALIGN="LEFT">school_id, grade</TD></TR>
+      <TR><TD ALIGN="LEFT">program_name, enrolled_date</TD></TR>
+    </TABLE>>];
+
+  /* ---------------- second-level facts ---------------- */
+
+  intervention_progress [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#8a5a1f" ALIGN="LEFT"><FONT COLOR="white"><B>silver.intervention_progress</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#f4f7fa" ALIGN="LEFT">intervention_id, observation_date&nbsp;&nbsp;<I>PK</I></TD></TR>
+      <TR><TD ALIGN="LEFT">student_id, school_id, domain</TD></TR>
+      <TR><TD ALIGN="LEFT">observed_value, aim_value, on_aim</TD></TR>
+    </TABLE>>];
+
+  referral_events [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#4a7c2f" ALIGN="LEFT"><FONT COLOR="white"><B>silver.referral_events</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#f4f7fa" ALIGN="LEFT">referral_event_id&nbsp;&nbsp;<I>PK</I></TD></TR>
+      <TR><TD ALIGN="LEFT">referral_id, student_id, school_id</TD></TR>
+      <TR><TD ALIGN="LEFT">from_status, to_status, event_date</TD></TR>
+      <TR><TD ALIGN="LEFT">closed_loop</TD></TR>
+    </TABLE>>];
+
+  services [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#4a7c2f" ALIGN="LEFT"><FONT COLOR="white"><B>silver.services</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#f4f7fa" ALIGN="LEFT">service_id&nbsp;&nbsp;<I>PK</I></TD></TR>
+      <TR><TD ALIGN="LEFT">referral_id, student_id, school_id, grade</TD></TR>
+      <TR><TD ALIGN="LEFT">partner_id, partner_name, service_category</TD></TR>
+      <TR><TD ALIGN="LEFT">service_date, sessions, hours</TD></TR>
+    </TABLE>>];
+
+  /* ---------------- conformed on school_id, not on student_id ---------------- */
+
+  staff [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#6b7280" ALIGN="LEFT"><FONT COLOR="white"><B>silver.staff</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#f4f7fa" ALIGN="LEFT">staff_id, school_year&nbsp;&nbsp;<I>PK</I></TD></TR>
+      <TR><TD ALIGN="LEFT">school_id, role_band, grade_band</TD></TR>
+      <TR><TD ALIGN="LEFT">gender, race_ethnicity</TD></TR>
+      <TR><TD ALIGN="LEFT"><FONT COLOR="#6b7280"><I>joins on school_id only, never<BR ALIGN="LEFT"/>to a student</I></FONT></TD></TR>
+    </TABLE>>];
+
+  /* ---------------- relationships ---------------- */
+
+  enrollment_yearly -> students [label="one row is the current year", style=dashed];
+
+  /* One-to-many from the roster. Unlabeled by design: every edge in this fan
+     is 1 : N, and thirteen copies of the same label buys nothing. The three
+     one-to-one relationships are labeled because they are the exceptions. */
+  students -> attendance_daily;
+  students -> attendance_monthly;
+  students -> incidents;
+  students -> benchmarks;
+  students -> state_assessments;
+  students -> assessments;
+  students -> sel_responses;
+  students -> interventions;
+  students -> referrals;
+  students -> program_participation;
+  students -> grad_tracker  [label="1 : 1"];
+  students -> ccr           [label="1 : 1"];
+  students -> grad_outcomes [label="1 : 1\nformer students"];
+
+  interventions -> intervention_progress [label="1 : N"];
+  referrals     -> referral_events       [label="1 : N"];
+  referrals     -> services              [label="1 : N"];
+
+  incidents:s -> interventions:n [
+    label = "triggering\nincident",
+    style = dashed, constraint = false, color = "#a05a2c", fontcolor = "#a05a2c"];
+
+  staff:n -> students:w [
+    style = dotted, dir = none, constraint = false, color = "#b0b7bf"];
+}

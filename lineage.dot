@@ -1,0 +1,190 @@
+/*
+ * Medallion lineage for the MTSS sample data model: which silver entities each
+ * published gold mart is built from.
+ *
+ * Render:  dot -Tsvg lineage.dot -o lineage.svg
+ *
+ * Every gold table is a full rebuild from the silver rows on its left. Nothing
+ * in gold is hand-entered and nothing is incrementally patched, so any number
+ * a reader sees can be re-derived from the layer underneath it in one query.
+ * Marts drawn with a heavy amber border apply N-size suppression with
+ * complementary suppression; see the contract at the top of gold.sql.
+ */
+digraph mtss_lineage {
+  graph [
+    rankdir = LR,
+    splines = spline,
+    nodesep = 0.22,
+    ranksep = 2.2,
+    fontname = "Helvetica",
+    fontsize = 11,
+    bgcolor = "white",
+    label = "MTSS sample data model, silver to gold lineage",
+    labelloc = t,
+    fontcolor = "#1f2933",
+    compound = true
+  ];
+  node [
+    shape = box,
+    style = "filled,rounded",
+    fontname = "Helvetica",
+    fontsize = 10,
+    height = 0.34,
+    margin = "0.14,0.06",
+    color = "#c2ccd6"
+  ];
+  edge [color = "#8a97a4", arrowsize = 0.6, penwidth = 0.9];
+
+  /* ------------------------------------------------------------------ */
+  subgraph cluster_silver {
+    label = "silver: typed, deduplicated, one row per business key";
+    fontname = "Helvetica";
+    fontsize = 12;
+    fontcolor = "#1f3a5f";
+    style = "rounded";
+    color = "#c2ccd6";
+    bgcolor = "#f7f9fb";
+    margin = 14;
+    node [fillcolor = "#dce7f0", fontcolor = "#12293f"];
+
+    s_students              [label = "students"];
+    s_enrollment_yearly     [label = "enrollment_yearly"];
+    s_attendance_daily      [label = "attendance_daily"];
+    s_attendance_monthly    [label = "attendance_monthly"];
+    s_incidents             [label = "incidents"];
+    s_benchmarks            [label = "benchmarks"];
+    s_state_assessments     [label = "state_assessments"];
+    s_assessments           [label = "assessments"];
+    s_sel_responses         [label = "sel_responses"];
+    s_interventions         [label = "interventions"];
+    s_intervention_progress [label = "intervention_progress"];
+    s_referrals             [label = "referrals"];
+    s_referral_events       [label = "referral_events"];
+    s_services              [label = "services"];
+    s_grad_outcomes         [label = "grad_outcomes"];
+    s_grad_tracker          [label = "grad_tracker"];
+    s_ccr                   [label = "ccr"];
+    s_staff                 [label = "staff"];
+    s_program               [label = "program_participation"];
+  }
+
+  /* ------------------------------------------------------------------ */
+  subgraph cluster_gold {
+    label = "gold: published aggregates, the only layer a public surface reads";
+    fontname = "Helvetica";
+    fontsize = 12;
+    fontcolor = "#8a5a1f";
+    style = "rounded";
+    color = "#c2ccd6";
+    bgcolor = "#fbf8f4";
+    margin = 14;
+    node [fillcolor = "#f3e2cc", fontcolor = "#4a3010"];
+
+    /* a heavy amber border marks a mart that applies N-size suppression */
+    g_enrollment_trends     [label = "enrollment_trends", fillcolor = "#faf4ec"];
+    g_enrollment_subgroups  [label = "enrollment_subgroups",  color = "#a05a2c", penwidth = 1.5];
+    g_key_indicators        [label = "key_indicators",        color = "#a05a2c", penwidth = 1.5];
+    g_assessment_prof       [label = "assessment_proficiency", color = "#a05a2c", penwidth = 1.5];
+    g_benchmark_summary     [label = "benchmark_summary", fillcolor = "#faf4ec"];
+    g_school_year_metrics   [label = "school_year_metrics", fillcolor = "#faf4ec"];
+    g_attendance_trends     [label = "attendance_trends",     color = "#a05a2c", penwidth = 1.5];
+    g_attendance_chronic    [label = "attendance_chronic",    color = "#a05a2c", penwidth = 1.5];
+    g_attendance_dist       [label = "attendance_distribution", fillcolor = "#faf4ec"];
+    g_attendance_by_month   [label = "attendance_by_month", fillcolor = "#faf4ec"];
+    g_behavior_per100       [label = "behavior_per100",       color = "#a05a2c", penwidth = 1.5];
+    g_sel_climate           [label = "sel_climate",           color = "#a05a2c", penwidth = 1.5];
+    g_sel_window_cmp        [label = "sel_window_comparison", color = "#a05a2c", penwidth = 1.5];
+    g_mtss_tiers            [label = "mtss_tiers",            color = "#a05a2c", penwidth = 1.5];
+    g_int_status            [label = "intervention_status",   color = "#a05a2c", penwidth = 1.5];
+    g_int_effect            [label = "intervention_effectiveness", color = "#a05a2c", penwidth = 1.5];
+    g_int_status_w          [label = "intervention_status_window", color = "#a05a2c", penwidth = 1.5];
+    g_int_effect_w          [label = "intervention_effectiveness_window", color = "#a05a2c", penwidth = 1.5];
+    g_community             [label = "community_services",    color = "#a05a2c", penwidth = 1.5];
+    g_community_w           [label = "community_services_window", color = "#a05a2c", penwidth = 1.5];
+    g_service_dosage        [label = "service_dosage",        color = "#a05a2c", penwidth = 1.5];
+    g_service_corr          [label = "service_correlation",   color = "#a05a2c", penwidth = 1.5];
+    g_graduation            [label = "graduation_outcomes",   color = "#a05a2c", penwidth = 1.5];
+    g_grad_tracker_sum      [label = "grad_tracker_summary", fillcolor = "#faf4ec"];
+    g_ccr                   [label = "college_career_readiness", color = "#a05a2c", penwidth = 1.5];
+    g_staff_demo            [label = "staff_demographics",    color = "#a05a2c", penwidth = 1.5];
+    g_program               [label = "program_participation", color = "#a05a2c", penwidth = 1.5];
+    g_district_kpis [
+      label = "district_kpis\nrecomputed from silver, then asserted\nagainst the marts above before the\nbuild is allowed to succeed",
+      fillcolor = "#e2c9a0", fontcolor = "#3a2508", fontsize = 9];
+  }
+
+  subgraph cluster_legend {
+    label = "";
+    style = "rounded";
+    color = "#dfe5ea";
+    bgcolor = "white";
+    margin = 10;
+    rank = sink;
+    node [fontsize = 9, height = 0.3];
+    l_supp   [label = "applies N-size suppression", fillcolor = "#f3e2cc",
+              fontcolor = "#4a3010", color = "#a05a2c", penwidth = 1.5];
+    l_nosupp [label = "no suppressible cell", fillcolor = "#faf4ec",
+              fontcolor = "#4a3010"];
+    { rank = same; l_supp; l_nosupp; }
+  }
+
+  /* ---------------- enrollment and demographics ---------------- */
+  s_enrollment_yearly -> g_enrollment_trends;
+  s_enrollment_yearly -> g_enrollment_subgroups;
+  s_students          -> g_key_indicators;
+
+  /* ---------------- achievement ---------------- */
+  s_state_assessments -> g_assessment_prof;
+  s_students          -> g_assessment_prof [color = "#c2ccd6"];
+  s_benchmarks        -> g_benchmark_summary;
+  s_assessments       -> g_school_year_metrics;
+
+  /* ---------------- attendance ---------------- */
+  s_attendance_daily   -> g_attendance_trends;
+  s_attendance_daily   -> g_attendance_chronic;
+  s_students           -> g_attendance_chronic [color = "#c2ccd6"];
+  s_attendance_daily   -> g_attendance_dist;
+  s_attendance_monthly -> g_attendance_by_month;
+  s_attendance_monthly -> g_school_year_metrics;
+
+  /* ---------------- behavior and climate ---------------- */
+  s_incidents     -> g_behavior_per100;
+  s_students      -> g_behavior_per100 [color = "#c2ccd6"];
+  s_sel_responses -> g_sel_climate;
+  s_sel_responses -> g_sel_window_cmp;
+
+  /* ---------------- MTSS ---------------- */
+  s_students              -> g_mtss_tiers;
+  s_interventions         -> g_int_status;
+  s_interventions         -> g_int_effect;
+  s_intervention_progress -> g_int_effect;
+  s_interventions         -> g_int_status_w;
+  s_interventions         -> g_int_effect_w;
+  s_intervention_progress -> g_int_effect_w;
+
+  /* ---------------- community school services ---------------- */
+  s_referrals       -> g_community;
+  s_services        -> g_community;
+  s_referrals       -> g_community_w;
+  s_referral_events -> g_community_w;
+  s_services        -> g_community_w;
+  s_services        -> g_service_dosage;
+  s_services        -> g_service_corr;
+
+  /* ---------------- graduation and readiness ---------------- */
+  s_grad_outcomes -> g_graduation;
+  s_grad_tracker  -> g_grad_tracker_sum;
+  s_ccr           -> g_ccr;
+
+  /* ---------------- workforce and programs ---------------- */
+  s_staff   -> g_staff_demo;
+  s_program -> g_program;
+
+  /* ---------------- the district summary ----------------
+     district_kpis is computed from silver directly, so it cannot drift with a
+     partially rebuilt mart, and is then asserted against the marts before the
+     build is allowed to succeed. A headline that disagrees with the table
+     beneath it fails the pipeline rather than reaching a reader. Its inputs
+     are not drawn: it reads most of the silver layer, and seven more edges
+     across this diagram would cost more legibility than they buy. */
+}

@@ -1,0 +1,73 @@
+name: check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Graphviz
+        run: sudo apt-get update && sudo apt-get install -y graphviz
+
+      # The committed SVGs are the published artifact. If a .dot changes and
+      # the .svg is not regenerated, the diagram a reader sees is stale.
+      - name: Diagrams match their sources
+        run: |
+          set -euo pipefail
+          for src in erd lineage; do
+            dot -Tsvg "$src.dot" -o "/tmp/$src.svg"
+            if ! diff -q "$src.svg" "/tmp/$src.svg" >/dev/null; then
+              echo "::error file=$src.svg::$src.svg is stale; run: dot -Tsvg $src.dot -o $src.svg"
+              exit 1
+            fi
+          done
+          echo "diagrams are current"
+
+      # American English, and no em dash or en dash in published prose.
+      - name: House style
+        run: |
+          set -euo pipefail
+          fail=0
+          if grep -nP '\xe2\x80\x94|\xe2\x80\x93' README.md *.sql *.dot; then
+            echo "::error::em dash or en dash found; use plain punctuation"
+            fail=1
+          fi
+          if grep -nEi '(\borganis|\banalys(e|ed|ing)\b|\bbehaviour|\bcolour|\bcentre\b|\blicence\b|\bcatalogue\b|normalis|prioritis|summaris|recognis|\bwhilst\b)' README.md *.sql *.dot; then
+            echo "::error::British spelling found; this repository is American English"
+            fail=1
+          fi
+          exit $fail
+
+      # Every table named in the README must exist in the DDL, and vice versa.
+      - name: README table lists match the DDL
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import re, sys
+
+          def ddl(path, schema):
+              return {m.group(1) for m in
+                      re.finditer(r'^CREATE TABLE %s\.(\w+)' % schema, open(path).read(), re.M)}
+
+          readme = open('README.md').read()
+          named = set(re.findall(r'`(\w+)`', readme))
+
+          problems = []
+          for path, schema, count in (('silver.sql', 'silver', 19), ('gold.sql', 'gold', 28)):
+              tables = ddl(path, schema)
+              if len(tables) != count:
+                  problems.append('%s declares %d tables, expected %d' % (path, len(tables), count))
+              missing = sorted(t for t in tables if t not in named)
+              if missing:
+                  problems.append('%s tables absent from README: %s' % (schema, ', '.join(missing)))
+
+          if problems:
+              print('\n'.join('::error::' + p for p in problems))
+              sys.exit(1)
+          print('README and DDL agree')
+          PY
